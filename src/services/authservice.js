@@ -57,14 +57,16 @@ module.exports = {
 
 	rememberSessionData(data) {
 		var linkIdInfo = {};
-		//if (data && data.merchantData) {
-			if (data) {	
+		console.log(store.state.userCtx.strMerchantID)
+		let strMerchantID=store.state.userCtx.strMerchantID?store.state.userCtx.strMerchantID:null
+		console.log(strMerchantID)
+		if (data && strMerchantID) {
 			// linkIdInfo = JSON.parse(data.merchantData);
 			axios({
 				method:'get',
 				url:'/api/Order/InitBill',
 				params:{
-					strMerchantID:store.state.userCtx.strMerchantID
+					strMerchantID:strMerchantID
 				}
 			}).then(a => {
 				console.log(a)
@@ -82,10 +84,11 @@ module.exports = {
 		}
 		store.commit('userCtx', {
 			isLoggedIn: true,
-			linkIdentity: linkIdInfo,
-			companys: companyInfo,
-			company: company,
-			isPlatform: store.state.userCtx.platformCode == company.companyId
+			// linkIdentity: linkIdInfo,
+			// companys: companyInfo,
+			// company: company,
+			isPlatform:true
+			//  store.state.userCtx.platformCode == company.companyId
 		});
 	}
 };

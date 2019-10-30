@@ -159,6 +159,7 @@ export default {
 		border-radius: 4px;
 		width: 100px;
 		margin-right: 40px;
+		margin-bottom:15px; 
 		text-align: center;
 		position: relative;
 		cursor: pointer;

@@ -4,10 +4,10 @@
     <div class="main w block-center">
       <Menu></Menu>
       <div class="main-content-right order-list">
-        <OrderEvaluate 
+        <!-- <OrderEvaluate 
 		 @successEvent="opClick('evaluateSuccess')"
 		  @closeEvent="opClick('evaluateExit')">
-		  </OrderEvaluate> 
+		  </OrderEvaluate>  -->
         <el-dialog title="完工码">
           <p class="color-red margin-bottom">提示：“完工码”是订单安装完工后，师傅需要填写至APP端的核销码，如未完工请勿提供</p>
           <p>本单完工码为：</p>
@@ -31,8 +31,8 @@
         </div>
         <ul class="order-title">
           <li>
-            <el-date-picker v-model="tagData.calendar" type="daterange" align="right" unlink-panels range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" :picker-options="tagData.calendarPicker" @change="queryInit('search')">
-            </el-date-picker>
+            <!-- <el-date-picker v-model="tagData.calendar" type="daterange" align="right" unlink-panels range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" :picker-options="tagData.calendarPicker" @change="queryInit('search')">
+            </el-date-picker> -->
           </li>
           <li>客户信息</li>
           <li>金额</li>
@@ -116,6 +116,9 @@ import OrderEvaluate from '../../components/orderevaluate';
  	export default {
 		 data(){
 			 return{
+				 uiData:{
+					 listDesc:{pageIndex:0,pageSize:0}
+				 },
 				 tagData:[],
 				//  state:this.$store.state
 			 }
