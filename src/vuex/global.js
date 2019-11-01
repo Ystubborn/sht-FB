@@ -36,7 +36,9 @@ const options = {
       isPlatform: false,
       platformCode: '425035663272972289',
       platformdealer: '425236371930746886',
-      upApi: {},
+      upApi: {
+        fsApiUrl:'http://apifile.zys6d.cn'
+      },
       // 关联业务身份信息：对于商户通这里就是商户资料
       linkIdentity: {},
       company: {},

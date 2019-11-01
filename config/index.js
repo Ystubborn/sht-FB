@@ -16,7 +16,7 @@ for (var key in networkInterfaces) {
 const ProxyServer_Dev = 'http://store.zys6d.cn';
 //正式环境代理服务器
 const ProxyServer_Prd = 'http://store.zys6d.cn';
-const ProxyServer_Test2='http://apidev.zys6d.cn'
+const ProxyServer_Test2 = 'http://apidev.zys6d.cn'
 module.exports = {
   build: {
     env: require('./prod.env'),
@@ -33,6 +33,16 @@ module.exports = {
     productionGzip: false,
     productionGzipExtensions: ['js', 'css'],
     proxyTable: {
+      '/api/file/Upload': {
+        target: 'http://apifile.zys6d.cn',  // 通过本地服务器将你的请求转发到这个地址
+        changeOrigin: true,  // 设置这个参数可以避免跨域
+        // pathRewrite: {
+        //   '/api': '/'
+        // }
+        cookieDomainRewrite: {
+          "*": ""
+        }
+      },
       '/api': {
         target: ProxyServer_Test2,  // 通过本地服务器将你的请求转发到这个地址
         changeOrigin: true,  // 设置这个参数可以避免跨域
@@ -43,7 +53,7 @@ module.exports = {
           "*": ""
         }
       },
-      '/auth':{
+      '/auth': {
         target: ProxyServer_Dev,  // 通过本地服务器将你的请求转发到这个地址
         changeOrigin: true,  // 设置这个参数可以避免跨域
       },
@@ -147,6 +157,16 @@ module.exports = {
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
     proxyTable: {
+      '/api/file/Upload': {
+        target: 'http://apifile.zys6d.cn',  // 通过本地服务器将你的请求转发到这个地址
+        changeOrigin: true,  // 设置这个参数可以避免跨域
+        // pathRewrite: {
+        //   '/api': '/'
+        // }
+        cookieDomainRewrite: {
+          "*": ""
+        }
+      },
       '/api': {
         target: ProxyServer_Test2,  // 通过本地服务器将你的请求转发到这个地址
         changeOrigin: true,  // 设置这个参数可以避免跨域
@@ -157,7 +177,7 @@ module.exports = {
           "*": ""
         }
       },
-      '/auth':{
+      '/auth': {
         target: ProxyServer_Dev,  // 通过本地服务器将你的请求转发到这个地址
         changeOrigin: true,  // 设置这个参数可以避免跨域
       },
