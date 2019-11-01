@@ -1,7 +1,7 @@
 <template>
   <dl class="images-dialog">
     <dt>
-      <el-upload :action="config.fsApiUrl+'FileInfo/AjaxUpload'" :show-file-list="false" :headers="{authCode:config.authCode,sysCode:config.sysCode,isThumbnail: false, isPrintText: false, isPrintPic: false }" multiple :limit="limit" :before-upload="beforeEvent" :on-success="successEvent" ref="upload" :disabled="disabled" :on-exceed="exceedEvent">
+      <el-upload :action="config.fsApiUrl+'api/file/Upload'" :show-file-list="false" :headers="{authCode:config.authCode,sysCode:config.sysCode,isThumbnail: false, isPrintText: false, isPrintPic: false }" multiple :limit="limit" :before-upload="beforeEvent" :on-success="successEvent" ref="upload" :disabled="disabled" :on-exceed="exceedEvent">
         <el-button plain type="warning" class="margin-right">点击上传</el-button>
         <slot></slot><br><span class="color-red">(最多上传{{limit}}个文件)</span>
       </el-upload>

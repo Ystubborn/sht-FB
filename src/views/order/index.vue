@@ -128,13 +128,12 @@ import OrderEvaluate from '../../components/orderevaluate';
 				 methods:'get',
 				 url:'/api/Order/GetMerchantOrderList',
 				 methods:{
-					 merchantID:'this.$store.state.userCtx.strMerchantID',
+					 merchantID:'this.$store.state.userCtx.MerchantID',
 					 orderStatus:'',
 					 pageIndex:'1',
 					 pageSize:'10'
 				 }
 			 }).then(res =>{
-				 console.log(res)
 			 })
 		 },
 		methods: {

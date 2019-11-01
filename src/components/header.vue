@@ -70,7 +70,7 @@ export default {
 		},
 		publshEvent(e) {
 			let t = this;	
-			t.axios.get(`/api/Order/CheckNewbill?strMerchantID=${e.userCtx.strMerchantID}`).then(res => {
+			t.axios.get(`/api/Order/CheckNewbill?MerchantID=${e.userCtx.MerchantID}`).then(res => {
 				console.log(res.data.data)
 				let reslut = res.data.data;
 				if (!t.comm.IsNullOrEmpty(reslut.orders_AdditionalFee) || !t.comm.IsNullOrEmpty(reslut.orders_ServiceChange)) {

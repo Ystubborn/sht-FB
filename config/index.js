@@ -16,7 +16,6 @@ for (var key in networkInterfaces) {
 const ProxyServer_Dev = 'http://store.zys6d.cn';
 //正式环境代理服务器
 const ProxyServer_Prd = 'http://store.zys6d.cn';
-const ProxyServer_Test1='https://api.zys6d.cn';
 const ProxyServer_Test2='http://apidev.zys6d.cn'
 module.exports = {
   build: {

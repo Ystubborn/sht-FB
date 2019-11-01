@@ -57,16 +57,14 @@ module.exports = {
 
 	rememberSessionData(data) {
 		var linkIdInfo = {};
-		console.log(store.state.userCtx.strMerchantID)
-		let strMerchantID=store.state.userCtx.strMerchantID?store.state.userCtx.strMerchantID:null
-		console.log(strMerchantID)
-		if (data && strMerchantID) {
+		let MerchantID=store.state.userCtx.MerchantID?store.state.userCtx.MerchantID:null
+		if (data && MerchantID) {
 			// linkIdInfo = JSON.parse(data.merchantData);
 			axios({
 				method:'get',
 				url:'/api/Order/InitBill',
 				params:{
-					strMerchantID:strMerchantID
+					MerchantID:MerchantID
 				}
 			}).then(a => {
 				console.log(a)

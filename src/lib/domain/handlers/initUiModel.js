@@ -5,7 +5,6 @@ const initUiModel=function(args){
     var self=this;
     return self.invokePlugIn('initUiModel',args)
       .then(data=>{
-        // debugger
         Object.keys(data).forEach(p=>{
           var existData= self[p];
           if(existData){

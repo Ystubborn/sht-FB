@@ -45,7 +45,7 @@ const options = {
       userToken:'',
       Token:'',
       organizationID:'',
-      strMerchantID:'uid_7483a5012f7bf9ac1a000000',
+      MerchantID:'uid_7483a5012f7bf9ac1a000000',
       InitBill:[]
 
     },

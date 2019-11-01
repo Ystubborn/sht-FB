@@ -11,7 +11,7 @@
           <Radio
             type="round"
             v-model="uiDatas.type"
-            :readonly="['fres_type_01','fres_type_03'].indexOf(uiData[0].itemCode)>-1"
+            :readonly="['fres_type_01','fres_type_03'].indexOf(uiDatas.service)>-1"
             readonly_msg="含有物流的订单只允许报价方式为师傅报价"
           >
             <div value="offer_type_01">
@@ -22,13 +22,12 @@
             </div>
           </Radio>
         </div>
-
-        <el-form-item label="服务类目：" prop="profield">
+        <el-form-item label="服务类目：" prop="profield.id">
           <Radio
             type="border"
             class="serviceicon"
             v-model="uiDatas.profield"
-            :readonly="uiData[1].length>0"
+            :readonly="uiDatas.fserviceentry.length>0"
             readonly_msg="如需更改类型，请将服务信息的项目全部移除"
           >
             <div v-for="(item,index) in uiData[1]" :key="item.itemCode" :value="item.itemCode">
@@ -43,7 +42,7 @@
           <Radio
             type="border"
             v-model="uiDatas.service"
-            :readonly="uiData[2].length>0"
+            :readonly="uiDatas.fserviceentry.length>0"
             readonly_msg="如需更改类型，请将服务信息的项目全部移除"
           >
             <div
@@ -55,7 +54,7 @@
         </div>
         <div class="title border-bottom-solid margin-bottom">
           客户信息
-          <span class="color-red font14"></span>
+          <span class="color-red font14">{{tagData.serviceTypeMessage}}</span>
         </div>
         <el-form-item>
           <button class="intelligence" type="button" @click="opClick('intelligence')">
@@ -69,7 +68,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="5">
-            <el-form-item prop="fphone">
+            <el-form-item prop="phone">
               <el-input type="text" v-model.trim="uiDatas.phone" placeholder="请输入客户手机号"></el-input>
             </el-form-item>
           </el-col>
@@ -77,11 +76,11 @@
         <el-form-item>
           <el-col :span="5">
             <el-form-item prop="region">
-              <City></City>
+              <City v-model="tagData.city"></City>
             </el-form-item>
           </el-col>
           <el-col :span="9">
-            <el-form-item prop="fcusaddress">
+            <el-form-item prop="cusaddress">
               <el-input
                 type="text"
                 placeholder="请输入详细的地址"
@@ -92,21 +91,32 @@
               </el-input>
             </el-form-item>
           </el-col>
-          <el-col :span="3">
-            <!-- <el-select class="i8">
-              <el-option></el-option>
-            </el-select>-->
+          <el-col :span="3" v-if="['fres_type_01','fres_type_03'].indexOf(uiDatas.service)>-1">
+            <el-select v-model="uiDatas.selevator" class="i8">
+              <el-option
+                :key="item.id"
+                :label="item.name"
+                :value="item.id"
+                v-for="item in [{'id':true,'name':'有电梯'},{'id':false,'name':'无电梯'}]"
+              ></el-option>
+            </el-select>
           </el-col>
-          <el-col :span="3">
-            <el-checkbox></el-checkbox>是否抬楼
+          <el-col
+            :span="3"
+            v-if="['fres_type_01','fres_type_03'].indexOf(uiDatas.service)>-1&&!uiDatas.selevator"
+          >
+            <el-checkbox v-model="uiDatas.isupstairs"></el-checkbox>是否抬楼
           </el-col>
-          <el-col :span="3">
-            <el-form-item prop="felevator">
+          <el-col
+            :span="3"
+            v-if="['fres_type_01','fres_type_03'].indexOf(uiDatas.service)>-1&&!uiDatas.selevator&&uiDatas.isupstairs"
+          >
+            <el-form-item prop="elevator">
               <el-input type="number" v-model.trim="uiDatas.elevator" class="i8" placeholder="输入楼层"></el-input>楼
             </el-form-item>
           </el-col>
         </el-form-item>
-        <div>
+        <div v-if="['fres_type_01','fres_type_03'].indexOf(uiDatas.service)>-1">
           <div class="title border-bottom-solid margin-bottom">
             物流信息
             <label class="color-gray">平台默认物流点验货时服务商仅验收商品外包装</label>
@@ -162,104 +172,208 @@
             ></el-input-number>元
           </el-form-item>
         </div>
-        <div>
+        <div v-if="uiDatas.service!='fres_type_03'">
           <div class="title border-bottom-solid margin-bottom">
             服务信息
+           
             <span
               class="color-red font14"
             >（重要提醒：平台主要针对定制家居安装为主，请您上传完整的安装图纸，以免图纸不全无法报价或安装时拒绝服务等情况出现。）</span>
           </div>
-          <el-form-item label-width="0px" class="form-service-item">
+          <el-form-item
+            label-width="0px"
+            class="form-service-item"
+            v-for=" (item,index) in uiDatas.fserviceentry"
+            :key="item.id"
+          >
             <div class="service-item">
-              <!-- <div>
-                <div class="img-panel">
+              <div>
+                <div class="img-panel" :data-count="item.fentityimage.id.split(',').length">
                   <img :src="item.fentityimage.url.split(',')[0]" />
                 </div>
                 <input type="button" value="添加图片" @click="opClick('showImageDialog',item.id)" />
-              </div>-->
-              <div>
-                <el-form-item label="服务项目" label-width="94px" is-required>
-                  <!-- <el-select placeholder="请选择服务类型" filterable>
-                    <el-option></el-option>
-                  </el-select>-->
-                </el-form-item>
-                <el-form-item label="材质" label-width="94px" is-required>
-                  <!-- <el-select placeholder="请选择材质" @change="opChange('itemcategory',item)">
-                    <el-option></el-option>
-                  </el-select>-->
-                </el-form-item>
-                <!-- <el-form-item label="房型" label-width="94px" :prop="'fserviceentry['+index+']'" :rules="rules['froomno.id']">
-                  <el-select placeholder="可选房型">
-                    <el-option></el-option>
-                  </el-select>
-                </el-form-item>-->
               </div>
-              <!-- <div>
+              <div>          
+                <el-form-item
+                  :prop="'fserviceentry['+index+'].fseritemid.id'"
+                  :rules="rules['fseritemid.id']"
+                  label="服务项目"
+                  label-width="94px"
+                  is-required
+                >
+                  <el-select placeholder="请选择服务类型" filterable v-model="item.fseritemid.id">
+                    <el-option
+                      v-for="seritem in tagData.serviceTypeData"
+                      :key="seritem.id"
+                      :label="seritem.name"
+                      :value="seritem.id"
+                    ></el-option>
+                  </el-select>
+                </el-form-item>
+                <el-form-item
+                  :prop="'fserviceentry['+index+'].fmaterial.id'"
+                  :rules="rules['fmaterial.id']"
+                  label="材质"
+                  label-width="94px"
+                  is-required
+                >
+                  <el-select
+                    placeholder="请选择材质"
+                    v-model="item.fmaterial.id"
+                    @change="opChange('itemcategory',item)"
+                  >
+                    <el-option
+                      v-for="material in comm.Odefault(tagData.serviceTypeData.find(o=>{return o.id==item.fseritemid.id;}),'material',[])"
+                      :key="material.id"
+                      :label="material.name"
+                      :value="material.id"
+                    ></el-option>
+                  </el-select>
+                </el-form-item>
+                <el-form-item
+                  label="房型"
+                  label-width="94px"
+                  :prop="'fserviceentry['+index+']'"
+                  :rules="rules['froomno.id']"
+                >
+                  <el-select placeholder="可选房型" v-model="item.froomno.id">
+                    <el-option
+                      v-for="roomno in tagData.comboStore.froomno"
+                      :key="roomno.id"
+                      :label="roomno.name"
+                      :value="roomno.id"
+                    ></el-option>
+                  </el-select>
+                </el-form-item>
+              </div>
+              <div>
                 <div>
                   <el-col :span="9">
-                    <el-form-item :label="(uiData.foffertype.id!='offer_type_01'?'期望':'')+'单价'" :prop="'fserviceentry['+index+'].fprice'" :rules="rules['fprice']" label-width="94px" is-required>
-                      <el-input-number placeholder="0元" class="input-price" :min="0" :controls="false" :max="1000000" v-model="item.fprice"></el-input-number>
+                    <el-form-item
+                      :label="(uiDatas.foffertype.id!='offer_type_01'?'期望':'')+'单价'"
+                      :prop="'fserviceentry['+index+'].fprice'"
+                      :rules="rules['fprice']"
+                      label-width="94px"
+                      is-required
+                    >
+                      <el-input-number
+                        placeholder="0元"
+                        class="input-price"
+                        :min="0"
+                        :controls="false"
+                        :max="1000000"
+                        v-model="item.fprice"
+                      ></el-input-number>
                     </el-form-item>
-                  </el-col> 
+                  </el-col>
                   <el-col :span="5">
-                    <el-form-item :prop="'fserviceentry['+index+'].funitid'" :rules="rules['funitid']">
+                    <el-form-item
+                      :prop="'fserviceentry['+index+'].funitid'"
+                      :rules="rules['funitid']"
+                    >
                       <el-select v-model="item.funitid" placeholder="单位" class="input-price">
-                        <el-option v-for="unit in tagData.unitData" :key="unit.fbillhead_id" :label="unit.fname" :value="unit.fbillhead_id"></el-option>
+                        <el-option
+                          v-for="unit in tagData.unitData"
+                          :key="unit.fbillhead_id"
+                          :label="unit.fname"
+                          :value="unit.fbillhead_id"
+                        ></el-option>
                       </el-select>
                     </el-form-item>
                   </el-col>
                   <el-col :span="10">
-                    <el-form-item label="数量" label-width="80px" :prop="'fserviceentry['+index+'].fqty'" :rules="rules['fqty']" is-required>
+                    <el-form-item
+                      label="数量"
+                      label-width="80px"
+                      :prop="'fserviceentry['+index+'].fqty'"
+                      :rules="rules['fqty']"
+                      is-required
+                    >
                       <el-input-number :min="0.001" :max="10000" v-model="item.fqty"></el-input-number>
                     </el-form-item>
                   </el-col>
                 </div>
-                <el-form-item label="特殊要求" label-width="94px" :prop="'fserviceentry['+index+'].frequire'" :rules="rules['frequire']">
-                  <el-input type="textarea" :rows="3" :maxlength="100" placeholder="请填写图纸以外没有注明的安装产品（例如：需要安装智能产品，罗马柱需要切角，顶线需要切割）安装请带齐工具（100字以内）" v-model="item.frequire"></el-input>
+                <el-form-item
+                  label="特殊要求"
+                  label-width="94px"
+                  :prop="'fserviceentry['+index+'].frequire'"
+                  :rules="rules['frequire']"
+                >
+                  <el-input
+                    type="textarea"
+                    :rows="3"
+                    :maxlength="100"
+                    placeholder="请填写图纸以外没有注明的安装产品（例如：需要安装智能产品，罗马柱需要切角，顶线需要切割）安装请带齐工具（100字以内）"
+                    v-model="item.frequire"
+                  ></el-input>
                 </el-form-item>
-              </div>-->
-              <!-- <div class="item-tools">
-                <div class="color-blue">金额：{{parseFloat((item.famount = (item.fprice||0) * (item.fqty||0) ).toFixed(2))}}元</div>
+              </div>
+              <div class="item-tools">
+                <div
+                  class="color-blue"
+                >金额：{{parseFloat((item.famount = (item.fprice||0) * (item.fqty||0) ).toFixed(2))}}元</div>
                 <i class="el-icon-delete" @click="opClick('deleteServiceItem',item.id)"></i>
-              </div>-->
+              </div>
             </div>
           </el-form-item>
-          <!-- <el-dialog title="添加图片" :visible.sync="tagData.serviceItem.visible" center :close-on-click-modal="false">
-            <ImgManage v-model="tagData.serviceItem.projectImage" :limit="8" :clear="tagData.serviceItem.visible">
-              请上传设计/安装图纸，便于师傅更准确的报价
-            </ImgManage>
+          <el-dialog
+            title="添加图片"
+            :visible.sync="tagData.serviceItem.visible"
+            center
+            :close-on-click-modal="false"
+          >
+            <ImgManage
+              v-model="tagData.serviceItem.projectImage"
+              :limit="8"
+              :clear="tagData.serviceItem.visible"
+            >请上传设计/安装图纸，便于师傅更准确的报价</ImgManage>
             <span slot="footer">
               <el-button @click="tagData.serviceItem.visible=!1">取 消</el-button>
               <el-button type="primary" @click="opClick('formatServiceItem')">确 定</el-button>
             </span>
-          </el-dialog>-->
-          <!-- <div class="service-item">
+          </el-dialog>
+          <div class="service-item">
             <input type="button" value="添加图片" @click="opClick('showImageDialog')" />
-          </div>-->
+          </div>
         </div>
         <div class="title border-bottom-solid margin-bottom">其他要求</div>
         <el-form-item label="是否到货：" is-required>
           <el-col :span="5">
             <el-select placeholder="货物是否到达物流点" v-model="uiDatas.isarrival" class="margin-right">
-              <!-- <el-option></el-option> -->
+              <el-option
+                :key="item.id"
+                :label="item.name"
+                :value="item.id"
+                v-for="item in [{'id':true,'name':'已到'},{'id':false,'name':'未到'}]"
+              ></el-option>
             </el-select>
           </el-col>
-          <el-col :span="10">
-            <!--<el-form-item
+          <el-col :span="10" v-if="!uiDatas.isarrival">
+            <el-form-item
               label="预计到货时间："
               label-position="left"
               label-width="110px"
-              prop="fexpectedarrivaldate"
+              prop="expectedarrivaldate"
             >
-               <el-date-picker type="date" placeholder="选择服务日期" class="margin-right"></el-date-picker> 
-            </el-form-item>-->
+              <!-- <el-date-picker
+                v-model="uiDatas.expectedarrivaldate"
+                type="date"
+                placeholder="选择服务日期"
+                class="margin-right"
+              ></el-date-picker>-->
+            </el-form-item>
           </el-col>
         </el-form-item>
-        <!-- <el-form-item label="服务日期：">
-          <el-date-picker type="date" placeholder="选择服务日期" class="margin-right"></el-date-picker> 
+        <el-form-item label="服务日期：">
+          <!-- <el-date-picker
+            type="date"
+            v-model="uiDatas.orderdate"
+            placeholder="选择服务日期"
+            class="margin-right"
+          ></el-date-picker>-->
           <span class="color-grey">(希望服务商在此日期上门服务)</span>
-        </el-form-item>-->
-        <el-form-item label="备注：" prop="fcareful" is-required>
+        </el-form-item>
+        <el-form-item label="备注：" prop="careful" is-required v-model="uiDatas.careful">
           <el-input
             :maxlength="200"
             class="textarea-big"
@@ -270,56 +384,75 @@
         </el-form-item>
         <el-form-item label="紧急联系人" is-required>
           <el-col :span="5">
-            <el-form-item prop="furgentname">
-              <el-input placeholder="请输入姓名" class="margin-right"></el-input>
+            <el-form-item prop="urgentname">
+              <el-input v-model="uiDatas.urgentname" placeholder="请输入姓名" class="margin-right"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item prop="furgentphone">
+            <el-form-item prop="urgentphone">
               电话：
-              <el-input type="text" placeholder="请输入电话"></el-input>
+              <el-input type="text" v-model.trim="uiDatas.urgentphone" placeholder="请输入电话"></el-input>
             </el-form-item>
           </el-col>
         </el-form-item>
         <p
           class="tips margin-bottom"
         >温馨提示：①定制类产品需要上传安装图纸或设计图纸，如订单信息与实际服务要求不符，由此造成的损失由用户自行承担。②订单服务过程中因非师傅原因导致师傅空跑，需按师傅报价时服务承诺支付师傅空跑费用。③定制类产品安装过程中造成的改柜、补板或二次上门等情况，用户需按实际情况适当增加费用。④如需师傅代买物料等行为，需支付相等金额的费用。⑤订单信息中必填内容和选填内容相冲突时（如商品信息和备注说明不一致等），一旦出现交易纠纷，平台客服将以订单必填信息为判断标准⑥为保障您的权益，所有行为均需在平台系统内操作，如线下行为造成的损失，平台将不予受理。</p>
-        <!-- <div>派单模式： <Radio v-model="tagData.master.tabactive" class="tab">
+        <div>
+          派单模式：
+          <Radio v-model="tagData.master.tabactive" class="tab">
             <div value="0">全部师傅</div>
             <div value="1">收藏师傅</div>
             <div value="2">指定师傅</div>
           </Radio>
-        </div>-->
-        <div class="tab-panel">
-          <!-- <p v-if="tagData.master.tabactive==0" class="margin-v-half color-orange">
-            订单将指派给符合要求的师傅。
-          </p>-->
-          <!-- <div v-if="tagData.master.tabactive!=0">
-            <em v-for="item in tagData.master.change" :key="item.id">{{item.name}}<i class="el-icon-close" @click="opClick('master-del',item.id)"></i></em><a href="javascript:void(0)" v-if="tagData.master.tabactive==1||(tagData.master.change.length==0&&tagData.master.tabactive==2)" @click="tagData.master.visible=!0;getData('master')">添加师傅</a>
-          </div>-->
         </div>
-        <!-- <div class="text-right" v-show="uiData.foffertype.id=='offer_type_01'">
-          <h1 class="color-blue">合计：{{(uiData.fexpectamount= comm.priceSum(uiData.fshippingamount+_.sum(_.map(uiData.fserviceentry,"famount")),2))}}元</h1>
-        </div>-->
+        <div class="tab-panel">
+          <p v-if="tagData.master.tabactive==0" class="margin-v-half color-orange">订单将指派给符合要求的师傅。</p>
+          <div v-if="tagData.master.tabactive!=0">
+            <em v-for="item in tagData.master.change" :key="item.id">
+              {{item.name}}
+              <i class="el-icon-close" @click="opClick('master-del',item.id)"></i>
+            </em>
+            <a
+              href="javascript:void(0)"
+              v-if="tagData.master.tabactive==1||(tagData.master.change.length==0&&tagData.master.tabactive==2)"
+              @click="tagData.master.visible=!0;getData('master')"
+            >添加师傅</a>
+          </div>
+        </div>
+        <div class="text-right" v-show="uiDatas.type=='offer_type_01'">
+          <h1
+            class="color-blue"
+          >合计：{{(uiDatas.fexpectamount= comm.priceSum(uiDatas.shippingamount+_.sum(_.map(uiDatas.fserviceentry,"famount")),2))}}元</h1>
+        </div>
       </el-form>
       <div class="text-right btn-panel">
         <button @click="opClick('save',!1)">保存</button>
         <button @click="opClick('save',!0)">提交订单</button>
       </div>
-      <!-- <el-dialog title="选择师傅" width="1020px" top="5vh" :visible.sync="tagData.master.visible">
+      <el-dialog title="选择师傅" width="1020px" top="5vh" :visible.sync="tagData.master.visible">
         <div class="search">
-          <el-input placeholder="请输入师傅姓名" v-model="tagData.master.search" @keyup.enter.native="getData('master')"></el-input>
+          <el-input
+            placeholder="请输入师傅姓名"
+            v-model="tagData.master.search"
+            @keyup.enter.native="getData('master')"
+          ></el-input>
           <el-button @click="getData('master',1,false)">搜索</el-button>
           <el-button @click="getData('master',1,true)">重置</el-button>
         </div>
         <ul class="master">
           <li v-for="item in tagData.master.listData" :key="item.fbillhead_id">
             <el-checkbox v-model="item.check" v-if="tagData.master.tabactive==1"></el-checkbox>
-            <div class="head" @click="$router.push({path: '/master/detail',query: {id: item.fbillhead_id}});">
+            <div
+              class="head"
+              @click="$router.push({path: '/master/detail',query: {id: item.fbillhead_id}});"
+            >
               <ImgRender type="headPort" :source="item.fimage"></ImgRender>
             </div>
             <div class="base">
-              <h5 @click="$router.push({path: '/master/detail',query: {id: item.fbillhead_id}});">{{item.fname}}</h5>
+              <h5
+                @click="$router.push({path: '/master/detail',query: {id: item.fbillhead_id}});"
+              >{{item.fname}}</h5>
               <p class="color-grey">{{item.fphone}}</p>
               <i class="icon icon-bond" v-if="item.fispaymargin==='1'">已缴保证金{{item.fmarginamount}}元</i>
             </div>
@@ -328,7 +461,13 @@
               <p>服务类目：{{item.fprofield_txt}}</p>
             </div>
             <div class="evl">
-              <p>综合评分:<el-rate :colors="['#FEE018','#FEE018','#FEE018']" :value="parseFloat(item.overallScore)" disabled></el-rate>
+              <p>
+                综合评分:
+                <el-rate
+                  :colors="['#FEE018','#FEE018','#FEE018']"
+                  :value="parseFloat(item.overallScore)"
+                  disabled
+                ></el-rate>
               </p>
               <p>
                 服务单数：
@@ -336,25 +475,39 @@
                 <label class="color-blue">{{item.applauseRate}}%</label>
               </p>
             </div>
-            <el-button type="orange" size="small" v-if="tagData.master.tabactive==2" @click="tagData.master.change=[{id: item.fbillhead_id, name: item.fname}];tagData.master.visible = !1;">雇佣TA</el-button>
+            <el-button
+              type="orange"
+              size="small"
+              v-if="tagData.master.tabactive==2"
+              @click="tagData.master.change=[{id: item.fbillhead_id, name: item.fname}];tagData.master.visible = !1;"
+            >雇佣TA</el-button>
           </li>
         </ul>
-        <el-checkbox v-model="tagData.master.checkall" @change="opClick('master-checkall')" v-if="tagData.master.tabactive==1">全选</el-checkbox>
+        <el-checkbox
+          v-model="tagData.master.checkall"
+          @change="opClick('master-checkall')"
+          v-if="tagData.master.tabactive==1"
+        >全选</el-checkbox>
         <template>
           <div class="text-center">
-            <el-pagination @current-change="getData('master',$event)" :page-size="tagData.master.listDesc.pageSize" layout="total,  prev, pager, next, jumper" :total="tagData.master.listDesc.rows"></el-pagination>
+            <el-pagination
+              @current-change="getData('master',$event)"
+              :page-size="tagData.master.listDesc.pageSize"
+              layout="total,  prev, pager, next, jumper"
+              :total="tagData.master.listDesc.rows"
+            ></el-pagination>
           </div>
         </template>
         <div slot="footer">
           <el-button @click="tagData.master.visible=!1">取消</el-button>
           <el-button type="primary" @click="opClick('master')">确定</el-button>
         </div>
-      </el-dialog>-->
+      </el-dialog>
     </div>
   </div>
 </template>
 <script>
-// import ImgManage from '../../../components/imagemanage';
+import ImgManage from "../../../components/imagemanage";
 // import {billView as base} from '../../../lib';
 // import placeOrderPlugIn from './placeOrderPlugIn';
 // import {vueCityDatas} from '../../../services/city-picker.data';
@@ -368,10 +521,60 @@ export default {
   data() {
     return {
       uiData: [],
+      tagData: {
+	      	city: "",
+          serviceItem: {
+            visible: !1,
+            projectImage:[], //当前项图片
+            editItem: "", //当前项id
+            imageslist: [], //所有项目图片信息 临时存放
+            tData: []
+        },
+        serviceTypeInit: [], //已加载的服务定价数据
+        serviceTypeData: [], //存放服务定价数据
+        master: {
+          tabactive: 0,
+          visible: !1,
+          listData: [],
+          change: [],
+          checkall: !1,
+          search: "",
+          listDesc: { pageCount: 5, pageIndex: 1, rows: 0 }
+        }
+      },
       uiDatas: {
-        type: "fres_type_01",
+        type: "offer_type_01",
         profield: "",
-        service: ""
+        service: "",
+        fserviceentry: 0,
+		fexpectamount: 0,
+		shippingamount:0
+      },
+      datePickerOptions: {
+        disabledDate(time) {
+          return time.getTime() < Date.now();
+        }
+      },
+      isLoad: !1,
+      unitData: [],
+      // serviceTypeMessage: '',
+      rules: {
+        "profield.id": [{ required: true, message: "请选择服务项目" }],
+        region: [
+          { required: true, message: "请选择完整的省市区", trigger: "change" }
+        ],
+        cusaddress: [
+          { required: true, message: "请输入详细地址", trigger: "blur" }
+        ],
+        careful: [
+          { required: true, message: "请填写注意事项", trigger: "blur" }
+        ],
+        logistics: [
+          { required: true, message: "请填写物流信息", trigger: "blur" }
+        ],
+        collectadd: [
+          { required: true, message: "请填写提货地址", trigger: "blur" }
+        ]
       }
     };
   },
@@ -383,418 +586,444 @@ export default {
     }
     this.uiData = newArr;
   },
-//   computed:{
-// 	  a()
-// 	  {
-
-// 		  console.log(this.uiDatas.type)
-// 		  return this.uiDatas.type;
-// 	  }
-//   },
   methods: {
     getData(type, data, call) {
       let t = this;
       switch (type) {
         case "seritemprice":
-			console.log(this.uiDatas.type)
-			let strMerchantID=t.$store.state.userCtx.strMerchantID
+          console.log(this.uiDatas.type);
+          let MerchantID = t.$store.state.userCtx.MerchantID;
           t.axios({
-            url: "/api/Order/GetService_Itemprice",
+            url: "/api/Order/GetServiceItemprice",
             methods: "get",
-            strMerchantID:strMerchantID,
-            strProfieID:t.uiDatas.profield,
-            strServiceType:t.uiDatas.service
+            params: {
+              strMerchantID: MerchantID,
+              strProfieID: t.uiDatas.profield,
+              strServiceType: t.uiDatas.service
+            }
           }).then(res => {
-            // let srvData = res.data.operationResult.srvData.data;
-            // let seritem = [];
-            // for (let i = 0; i < srvData.length; i++) {
-            //   let item = srvData[i];
-            //   let tmaterial = {
-            //     id: item.fmaterial,
-            //     name: item.fmaterial_fenumitem,
-            //     price: item.fsellprice,
-            //     unit: { id: item.funitid, name: item.funitid_fname },
-            //     fprofield: { id: item.fprofield }
-            //   }; //材质
-            //   let tseritem = seritem.find(o => {
-            //     return o.id === item.fseritemid;
-            //   }); //服务项目
-            //   if (tseritem == null) {
-            //     seritem.push({
-            //       id: item.fseritemid,
-            //       name: item.fseritemid_fname,
-            //       material: [tmaterial]
-            //     });
-            //   } else {
-            //     tseritem.material.push(tmaterial);
-            //   }
-            // }
-            // t.tagData.serviceTypeData = seritem;
+            let srvData = res.data.data;
+            let seritem = [];
+            for (let i = 0; i < srvData.length; i++) {
+              let item = srvData[i];
+              let tmaterial = {
+                id: item.service_ItemID,
+                name: item.material_Txt,
+                price: item.sellPrice,
+                unit: { id: item.unitID, name: item.unitName }
+                // profield: { id: item.material}
+              }; //材质
+              let tseritem = seritem.find(o => {
+                return o.id === item.fseritemid;
+              }); //服务项目
+              if (tseritem == null) {
+                seritem.push({
+                  id: item.fseritemid,
+                  name: item.fseritemid_fname,
+                  material: [tmaterial]
+                });
+              } else {
+                tseritem.material.push(tmaterial);
+              }
+            }
+            t.tagData.serviceTypeData = seritem;
           });
           break;
-        case "unit":
-        //   t.axios
-        //     .post("/list/ydj_unit?operationno=querydata", {
-        //       filterString: "",
-        //       pageCount: 1000,
-        //       pageIndex: 1,
-        //       loadingOption: { target: ".element-loading" }
-        //     })
-        //     .then(res => {
-        //       let srvData = res.data.operationResult.srvData.data;
-        //       t.tagData.unitData = srvData;
-        //     });
+        // case "unit":
+        // t.axios
+        //   .post("/list/ydj_unit?operationno=querydata", {
+        //     filterString: "",
+        //     pageCount: 1000,
+        //     pageIndex: 1,
+        //     loadingOption: { target: ".element-loading" }
+        //   })
+        //   .then(res => {
+        //     let srvData = res.data.operationResult.srvData.data;
+        //     t.tagData.unitData = srvData;
+        //   });
+        // break;
+        case "master":
+          let filterStr = "fapprovestatus ='auth2'";
+          if (t.tagData.master.tabactive == 1) {
+            filterStr +=
+              " and fid in(select fmasterid from t_ydj_masterfavorites where fisfavorites=0 and fmerchantid='" +
+              t.$store.state.userCtx.linkIdentity.id +
+              "')";
+          } else {
+            filterStr +=
+              " and fmainorgid='" +
+              t.$store.state.userCtx.company.companyId +
+              "'";
+          }
+          if (call === true) {
+            t.tagData.master.search = "";
+          }
+          if (call === false && t.comm.IsNullOrEmpty(t.tagData.master.search)) {
+            t.$message({
+              message: "您不输入点什么嘛，让我怎找！",
+              type: "warning"
+            });
+            return;
+          }
+          if (!t.comm.IsNullOrEmpty(t.tagData.master.search)) {
+            filterStr += this.$util.format(
+              " and fname like '%{0}%'",
+              t.tagData.master.search
+            );
+          }
+          t.axios
+            .post("/list/ydj_master?operationno=querydata", {
+              selectFields: ["fphone"],
+              filterString: filterStr,
+              simpleData: {
+                fmerchantid: t.$store.state.userCtx.linkIdentity.id
+              },
+              orderByString: "fgrade desc,fstar desc",
+              pageCount: t.tagData.master.listDesc.pageCount,
+              pageIndex: data || 1
+            })
+            .then(res => {
+              let srvData = res.data.operationResult.srvData;
+              t.tagData.master.listData = srvData.data;
+              t.tagData.master.listDesc.rows = srvData.dataDesc.rows;
+            });
           break;
-        // 			case 'master':
-        // 				let filterStr = "fapprovestatus ='auth2'";
-        // 				if (t.tagData.master.tabactive == 1) {
-        // 					filterStr += " and fid in(select fmasterid from t_ydj_masterfavorites where fisfavorites=0 and fmerchantid='" + t.$store.state.userCtx.linkIdentity.id + "')";
-        // 				} else {
-        // 					filterStr += " and fmainorgid='" + t.$store.state.userCtx.company.companyId + "'";
-        // 				}
-        // 				if (call === true) {
-        // 					t.tagData.master.search = '';
-        // 				}
-        // 				if (call === false && t.comm.IsNullOrEmpty(t.tagData.master.search)) {
-        // 					t.$message({
-        // 						message: '您不输入点什么嘛，让我怎找！',
-        // 						type: 'warning'
-        // 					});
-        // 					return;
-        // 				}
-        // 				if (!t.comm.IsNullOrEmpty(t.tagData.master.search)) {
-        // 					filterStr += this.$util.format(" and fname like '%{0}%'", t.tagData.master.search);
-        // 				}
-        // 				t.axios
-        // 					.post('/list/ydj_master?operationno=querydata', {
-        // 						selectFields: ['fphone'],
-        // 						filterString: filterStr,
-        // 						simpleData: {fmerchantid: t.$store.state.userCtx.linkIdentity.id},
-        // 						orderByString: 'fgrade desc,fstar desc',
-        // 						pageCount: t.tagData.master.listDesc.pageCount,
-        // 						pageIndex: data || 1
-        // 					})
-        // 					.then(res => {
-        // 						let srvData = res.data.operationResult.srvData;
-        // 						t.tagData.master.listData = srvData.data;
-        // 						t.tagData.master.listDesc.rows = srvData.dataDesc.rows;
-        // 					});
-        // 				break;
       }
     },
-    	opChange(type, data) {
-    		let t = this;
-    		switch (type) {
-    			case 'itemcategory': //服务信息 服务类目下拉框
-    				let material = t.tagData.serviceTypeData
-    					.find(o => {
-    						return o.id == data.fseritemid.id;
-    					})
-    					.material.find(o => {
-    						return o.id == data.fmaterial.id;
-    					});
-    				data.fprice = material.price;
-    				data.funitid = material.unit.id;
-    				data.funitid_fname = material.unit.name;
-    				data.famount = material.price;
-    				data.fprofieldentry = material.fprofield;
-    				break;
-    		}
-    	},
+    opChange(type, data) {
+      let t = this;
+      switch (type) {
+        case "itemcategory": //服务信息 服务类目下拉框
+          let material = t.tagData.serviceTypeData
+            .find(o => {
+              return o.id == data.fseritemid.id;
+            })
+            .material.find(o => {
+              return o.id == data.fmaterial.id;
+            });
+          data.fprice = material.price;
+          data.funitid = material.unit.id;
+          data.funitid_fname = material.unit.name;
+          data.famount = material.price;
+          data.fprofieldentry = material.fprofield;
+          break;
+      }
+    },
     opClick(type, data) {
       let t = this;
-    },
-    // switch (type) {
-
-    // 			case 'intelligence':
-    // 				t.$prompt('', '地址信息', {
-    // 					confirmButtonText: '确定',
-    // 					cancelButtonText: '取消',
-    // 					inputValue: '',
-    // 					inputPlaceholder: '请在此处粘贴地址相关信息',
-    // 					inputType: 'textarea'
-    // 				})
-    // 					.then(({value}) => {
-    // 						let phone = /((\+?86)|(\(\+86\)))?1[3-9][0-9]{9}/.exec(value);
-    // 						if (phone != null) {
-    // 							t.uiData.fphone = phone[0];
-    // 						}
-    // 						let name = new RegExp('(?<name>[\u4e00-\u9fa5]{2,4})').exec(value).groups['name'];
-    // 						if (name != null) {
-    // 							t.uiData.fname = name;
-    // 						}
-    // 						let area = value.replace(t.uiData.fphone, '').replace(t.uiData.fname, '');
-    // 						area = new RegExp('(?<province>[^省]+省|.+自治区|上海|北京|天津|重庆)(?<city>[^市]+市|.+自治州|市辖区)(?<region>[^县]+县|.+区|.+镇|.+局)(?<address>.*)').exec(area);
-    // 						if (area.groups['province'] != null) {
-    // 							let p = vueCityDatas.find(o => {
-    // 								return o.label.indexOf(area.groups['province'].trim()) > -1;
-    // 							});
-    // 							if (area.groups['city'] != null && p != null) {
-    // 								let c = p.children.find(o => {
-    // 									return o.label.indexOf(area.groups['city'].trim()) > -1;
-    // 								});
-    // 								if (area.groups['region'] != null && c != null) {
-    // 									let a = c.children.find(o => {
-    // 										return o.label.indexOf(area.groups['region'].trim()) > -1;
-    // 									});
-    // 									if (a != null) {
-    // 										t.tagData.city = [p.value, c.value, a.value];
-    // 										t.uiData.fcusaddress = area.groups['address'].trim();
-    // 									}
-    // 								}
-    // 							}
-    // 						}
-    // 					})
-    // 					.catch(() => {});
-    // 				break;
-    // 			case 'deleteServiceItem': //删除服务信息单项
-    // 				t.$confirm('您确定移除该项？', '操作提示', {
-    // 					confirmButtonText: '确定',
-    // 					cancelButtonText: '取消',
-    // 					type: 'warning'
-    // 				}).then(() => {
-    // 					t.comm.ArrayRemove(t.uiData.fserviceentry, o => {
-    // 						return o.id == data;
-    // 					});
-    // 					t.comm.ArrayRemove(t.tagData.serviceItem.imageslist, o => {
-    // 						return o.id == data;
-    // 					});
-    // 				});
-    // 				break;
-    // 			case 'showImageDialog': //展示服务信息 图片上传框
-    // 				if (t.comm.IsNullOrEmpty(t.uiData.fprofield.id)) {
-    // 					t.$message({
-    // 						message: '请先选择服务类目',
-    // 						type: 'warning'
-    // 					});
-    // 					return;
-    // 				}
-    // 				if (t.comm.IsNullOrEmpty(t.uiData.fservicetype.id)) {
-    // 					t.$message({
-    // 						message: '请先选择服务类型',
-    // 						type: 'warning'
-    // 					});
-    // 					return;
-    // 				}
-    // 				t.tagData.serviceItem.editItem = data || '';
-    // 				t.tagData.serviceItem.projectImage = t.comm.Odefault(
-    // 					t.tagData.serviceItem.imageslist.find(o => {
-    // 						return o.id === data;
-    // 					}),
-    // 					'data',
-    // 					[]
-    // 				);
-    // 				t.tagData.serviceItem.visible = !0;
-    // 				break;
-    // 			case 'formatServiceItem': //服务明细图片确定按钮
-    // 				if (t.tagData.serviceItem.projectImage.length == 0) {
-    // 					t.$message({
-    // 						message: '请耐心等待图片上传完毕',
-    // 						type: 'warning'
-    // 					});
-    // 					return false;
-    // 				}
-    // 				let entity = {
-    // 					id: _.map(t.tagData.serviceItem.projectImage, 'id').join(),
-    // 					name: _.map(t.tagData.serviceItem.projectImage, 'name').join(),
-    // 					url: _.map(t.tagData.serviceItem.projectImage, 'url').join()
-    // 				};
-    // 				if (t.comm.IsNullOrEmpty(entity.id)) {
-    // 					t.$message({
-    // 						message: '请至少上传一张图片',
-    // 						type: 'warning'
-    // 					});
-    // 					return false;
-    // 				}
-    // 				t.tagData.serviceItem.visible = !1;
-    // 				if (t.comm.IsNullOrEmpty(t.tagData.serviceItem.editItem)) {
-    // 					let gid = t.comm.Guid();
-    // 					t.tagData.serviceItem.imageslist.push({
-    // 						id: gid,
-    // 						data: t.tagData.serviceItem.projectImage
-    // 					});
-    // 					t.uiData.fserviceentry.push({
-    // 						id: gid,
-    // 						fentityimage: entity,
-    // 						fseritemid: {id: '', name: ''},
-    // 						fmaterial: {id: '', name: ''},
-    // 						fqty: 1,
-    // 						fprice: 0,
-    // 						frequire: '',
-    // 						froomno: {id: '', name: ''},
-    // 						funitid: ''
-    // 					});
-    // 				} else {
-    // 					t.uiData.fserviceentry.find(o => {
-    // 						return o.id === t.tagData.serviceItem.editItem;
-    // 					}).fentityimage = entity;
-    // 					t.tagData.serviceItem.imageslist.find(o => {
-    // 						return o.id === t.tagData.serviceItem.editItem;
-    // 					}).data = t.tagData.serviceItem.projectImage;
-    // 				}
-    // 				break;
-    // 			case 'save': //保存或提交按钮
-    // 				t.uiData.forderdate = new Date((t.uiData.forderdate instanceof Date ? t.uiData.forderdate : new Date()).setHours(8));
-    // 				if (t.uiData.fexpectedarrivaldate instanceof Date) {
-    // 					t.uiData.fexpectedarrivaldate = new Date(t.uiData.fexpectedarrivaldate.setHours(8));
-    // 				}
-    // 				t.$refs['uiData'].validate(valid => {
-    // 					if (!valid) {
-    // 						t.$message({
-    // 							message: '请完善当前订单信息',
-    // 							type: 'warning'
-    // 						});
-    // 						return false;
-    // 					}
-    // 					if (t.uiData.fservicetype.id == 'fres_type_03') {
-    // 						t.uiData.fserviceentry = [
-    // 							{
-    // 								fentityimage: '',
-    // 								fseritemid: {id: '200000000000001026', name: '其它'},
-    // 								fmaterial: {id: 'material_33', name: '其它'},
-    // 								fqty: 1,
-    // 								fprice: 0,
-    // 								famount: 0,
-    // 								frequire: ''
-    // 							}
-    // 						];
-    // 					}
-    // 					if (t.comm.IsNullOrEmpty(t.uiData.fserviceentry) || t.uiData.fserviceentry.length == 0) {
-    // 						t.$message({
-    // 							message: '请至少填写一项服务信息',
-    // 							type: 'warning'
-    // 						});
-    // 						return false;
-    // 					}
-    // 					let pid = t.uiData.fprofield.id.split(',');
-    // 					t.uiData.fprofield_txt = t.uiData.fprofield.name = t._.map(
-    // 						t.tagData.comboStore.fprofield.filter(o => {
-    // 							return pid.indexOf(o.id) > -1;
-    // 						}),
-    // 						'name'
-    // 					).join();
-    // 					t.tagData.isSubmit = data;
-    // 					if (['fres_type_01', 'fres_type_03'].indexOf(t.uiData.fservicetype.id) > -1) {
-    // 						t.uiData.foffertype.id = 'offer_type_02';
-    // 					} else {
-    // 						t.uiData.flogistics = '';
-    // 						t.uiData.flogisticsno = '';
-    // 						t.uiData.fcollectadd = '';
-    // 						t.uiData.fcollectrel = '';
-    // 						t.uiData.fcollectpho = '';
-    // 						t.uiData.fpieces = 0;
-    // 						t.uiData.fshippingamount = 0;
-    // 						t.uiData.fispay = false;
-    // 						t.uiData.felevator = 0;
-    // 					}
-    // 					if (!t.comm.IsNullOrEmpty(t.tagData.master.change)) {
-    // 						t.uiData.fmasterid = {id: t._.map(t.tagData.master.change, 'id').join(), name: t._.map(t.tagData.master.change, 'name').join()};
-    // 						t.uiData.fisappointedorder = 1;
-    // 					}
-    // 					t.menuItemClick({opcode: 'save', event: 'uiData'});
-    // 				});
-    // 				break;
-    // 			case 'master':
-    // 				t.tagData.master.listData.forEach(o => {
-    // 					if (o.check == true) {
-    // 						let ch = t.tagData.master.change.find(a => {
-    // 							return a.id == o.fbillhead_id;
-    // 						});
-    // 						if (ch == null) {
-    // 							t.tagData.master.change.push({id: o.fbillhead_id, name: o.fname});
-    // 						}
-    // 					}
-    // 				});
-    // 				t.tagData.master.visible = !1;
-    // 				break;
-    // 			case 'master-del':
-    // 				t.$confirm('您确定移除该项？', '操作提示', {
-    // 					confirmButtonText: '确定',
-    // 					cancelButtonText: '取消',
-    // 					type: 'warning'
-    // 				}).then(() => {
-    // 					t.comm.ArrayRemove(t.tagData.master.change, o => {
-    // 						return o.id == data;
-    // 					});
-    // 				});
-    // 				break;
-    // 			case 'master-checkall':
-    // 				t.tagData.master.listData = t.tagData.master.listData.map(o => {
-    // 					o.check = t.tagData.master.checkall;
-    // 					return o;
-    // 				});
-    // 				break;
-    // 			default:
-    // 				break;
-    // 		}
-    // }
-    // },
-    // components: {ImgManage},
-    // computed: {
-    	// Profield() {
-		// 	console.log(this.uiDatas.type)
-    	// 	// if (!this.comm.IsNullOrEmpty(this.uiData.fprofield)) {
-    	// 		return this.uiDatas.type;
-    	// 	// }
-    	// },
-    // 	serviceType() {
-    // 		if (!this.comm.IsNullOrEmpty(this.uiData.fservicetype)) {
-    // 			return this.uiData.fservicetype.id;
-    // 		}
-    // 	},
-    // 	city() {
-    // 		return this.tagData.city;
-    // 	},
-    // 	appointed() {
-    // 		if (!this.comm.IsNullOrEmpty(this.tagData.master)) {
-    // 			return this.tagData.master.tabactive;
-    // 		}
-    // 	},
-    // 	masterCh() {
-    // 		return this.uiData.fmasterid;
-    // 	}
-    // },
-    // watch: {
-    // 	city(v) {
-    // 		this.uiData.fprovince = {id: v[0] || ''};
-    // 		this.uiData.fcity = {id: v[1] || ''};
-    // 		this.uiData.fregion = {id: v[2] || ''};
-    // 	},
-    // 	serviceType(v) {
-    // 		if (['fres_type_01', 'fres_type_03'].indexOf(v) > -1) {
-    // 			this.uiData.foffertype.id = 'offer_type_02';
-    // 			this.tagData.serviceTypeMessage = '目前配送类服务只支持“师傅报价”模式，暂不支持“一口价”';
-    // 		} else {
-    // 			this.tagData.serviceTypeMessage = '';
-    // 		}
-    // 		this.getData('seritemprice');
-    // 	},
-    	// Profield(v) {
-    	// 	if (!this.comm.IsNullOrEmpty(v)) {
-    	// 		this.uiDatas.type = '';
-    	// 	}
-    	// },
-    // 	appointed(v) {
-    // 		this.tagData.master.change = [];
-    // 	},
-    // 	masterCh(v) {
-    // 		if (!this.comm.IsNullOrEmpty(v.id) && this.tagData.isLoad) {
-    // 			let _id = v.id.split(',');
-    // 			let _name = v.name.split(',');
-    // 			let _arr = [];
-    // 			for (var i = 0; i < _id.length; i++) {
-    // 				_arr.push({id: _id[i], name: _name[i]});
-    // 			}
-    // 			this.tagData.master.change = _arr;
-    	// 	}
-    	// }
+      switch (type) {
+        case "intelligence":
+          t.$prompt("", "地址信息", {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            inputValue: "",
+            inputPlaceholder: "请在此处粘贴地址相关信息",
+            inputType: "textarea"
+          })
+            .then(({ value }) => {
+              let phone = /((\+?86)|(\(\+86\)))?1[3-9][0-9]{9}/.exec(value);
+              if (phone != null) {
+                t.uiDatas.phone = phone[0];
+              }
+              let name = new RegExp("(?<name>[\u4e00-\u9fa5]{2,4})").exec(value)
+                .groups["name"];
+              if (name != null) {
+                t.uiDatas.name = name;
+              }
+              let area = value
+                .replace(t.uiDatas.phone, "")
+                .replace(t.uiDatas.name, "");
+              area = new RegExp(
+                "(?<province>[^省]+省|.+自治区|上海|北京|天津|重庆)(?<city>[^市]+市|.+自治州|市辖区)(?<region>[^县]+县|.+区|.+镇|.+局)(?<address>.*)"
+              ).exec(area);
+              if (area.groups["province"] != null) {
+                let p = vueCityDatas.find(o => {
+                  return o.label.indexOf(area.groups["province"].trim()) > -1;
+                });
+                if (area.groups["city"] != null && p != null) {
+                  let c = p.children.find(o => {
+                    return o.label.indexOf(area.groups["city"].trim()) > -1;
+                  });
+                  if (area.groups["region"] != null && c != null) {
+                    let a = c.children.find(o => {
+                      return o.label.indexOf(area.groups["region"].trim()) > -1;
+                    });
+                    if (a != null) {
+                      t.tagDatas.city = [p.value, c.value, a.value];
+                      t.uiDatas.cusaddress = area.groups["address"].trim();
+                    }
+                  }
+                }
+              }
+            })
+            .catch(() => {});
+          break;
+        case "deleteServiceItem": //删除服务信息单项
+          t.$confirm("您确定移除该项？", "操作提示", {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            type: "warning"
+          }).then(() => {
+            t.comm.ArrayRemove(t.uiDatas.fserviceentry, o => {
+              return o.id == data;
+            });
+            t.comm.ArrayRemove(t.tagData.serviceItem.imageslist, o => {
+              return o.id == data;
+            });
+          });
+          break;
+        case "showImageDialog": //展示服务信息 图片上传框
+          if (t.comm.IsNullOrEmpty(t.uiDatas.profield)) {
+            t.$message({
+              message: "请先选择服务类目",
+              type: "warning"
+            });
+            return;
+          }
+          if (t.comm.IsNullOrEmpty(t.uiDatas.service)) {
+            t.$message({
+              message: "请先选择服务类型",
+              type: "warning"
+            });
+            return;
+          }
+          // console.log(t.tagData.serviceItem.projectImage)
+          t.tagData.serviceItem.editItem = data || "";
+          t.tagData.serviceItem.projectImage = t.comm.Odefault(
+            t.tagData.serviceItem.imageslist.find(o => {
+              return o.id === data;
+            }),
+            "data",
+            []
+          );
+          t.tagData.serviceItem.visible = !0;
+          break;
+        case "formatServiceItem": //服务明细图片确定按钮
+          if (t.tagData.serviceItem.projectImage.length == 0) {
+            t.$message({
+              message: "请耐心等待图片上传完毕",
+              type: "warning"
+            });
+            return false;
+          }
+          let entity = {
+            id: _.map(t.tagData.serviceItem.projectImage, "id").join(),
+            name: _.map(t.tagData.serviceItem.projectImage, "name").join(),
+            url: _.map(t.tagData.serviceItem.projectImage, "url").join()
+          };
+          if (t.comm.IsNullOrEmpty(entity.id)) {
+            t.$message({
+              message: "请至少上传一张图片",
+              type: "warning"
+            });
+            return false;
+          }
+          t.tagData.serviceItem.visible = !1;
+          if (t.comm.IsNullOrEmpty(t.tagData.serviceItem.editItem)) {
+            let gid = t.comm.Guid();
+            t.tagData.serviceItem.imageslist.push({
+              id: gid,
+              data: t.tagData.serviceItem.projectImage
+            });
+            t.uiDatas.fserviceentry.push({
+              id: gid,
+              fentityimage: entity,
+              fseritemid: { id: "", name: "" },
+              fmaterial: { id: "", name: "" },
+              fqty: 1,
+              fprice: 0,
+              frequire: "",
+              froomno: { id: "", name: "" },
+              funitid: ""
+            });
+          } else {
+            t.uiDatas.fserviceentry.find(o => {
+              return o.id === t.tagData.serviceItem.editItem;
+            }).fentityimage = entity;
+            t.tagData.serviceItem.imageslist.find(o => {
+              return o.id === t.tagData.serviceItem.editItem;
+            }).data = t.tagData.serviceItem.projectImage;
+          }
+          break;
+        case "save": //保存或提交按钮
+          t.uiDatas.forderdate = new Date(
+            (t.uiDatas.forderdate instanceof Date
+              ? t.uiDatas.forderdate
+              : new Date()
+            ).setHours(8)
+          );
+          if (t.uiDatas.fexpectedarrivaldate instanceof Date) {
+            t.uiDatas.fexpectedarrivaldate = new Date(
+              t.uiDatas.fexpectedarrivaldate.setHours(8)
+            );
+          }
+          t.$refs["uiDatas"].validate(valid => {
+            if (!valid) {
+              t.$message({
+                message: "请完善当前订单信息",
+                type: "warning"
+              });
+              return false;
+            }
+            if (t.uiDatas.type == "fres_type_03") {
+              t.uiDatas.fserviceentry = [
+                {
+                  fentityimage: "",
+                  fseritemid: { id: "200000000000001026", name: "其它" },
+                  fmaterial: { id: "material_33", name: "其它" },
+                  fqty: 1,
+                  fprice: 0,
+                  famount: 0,
+                  frequire: ""
+                }
+              ];
+            }
+            if (
+              t.comm.IsNullOrEmpty(t.uiDatas.fserviceentry) ||
+              t.uiDatas.fserviceentry.length == 0
+            ) {
+              t.$message({
+                message: "请至少填写一项服务信息",
+                type: "warning"
+              });
+              return false;
+            }
+            let pid = t.uiDatas.profield.split(",");
+            // t.uiDatas.profield_txt = t.uiDatas.profield.name = t._.map(
+            //   t.tagData.comboStore.fprofield.filter(o => {
+            //     return pid.indexOf(o.id) > -1;
+            //   }),
+            //   "name"
+            // ).join();
+			// t.tagData.isSubmit = data;
+			console.log( t.uiDatas.profield)
+            if (
+              ["fres_type_01", "fres_type_03"].indexOf(
+                t.uiDatas.type
+              ) > -1
+            ) {
+              t.uiDatas.type = "offer_type_02";
+            } else {
+              t.uiDatas.logistics = "";
+              t.uiDatas.logisticsno = "";
+              t.uiDatas.collectadd = "";
+              t.uiDatas.collectrel = "";
+              t.uiDatas.collectpho = "";
+              t.uiDatas.pieces = 0;
+              t.uiDatas.shippingamount = 0;
+              t.uiDatas.ispay = false;
+              t.uiDatas.elevator = 0;
+            }
+            if (!t.comm.IsNullOrEmpty(t.tagData.master.change)) {
+              t.uiDatas.fmasterid = {
+                id: t._.map(t.tagData.master.change, "id").join(),
+                name: t._.map(t.tagData.master.change, "name").join()
+              };
+              t.uiDatas.fisappointedorder = 1;
+			}
+			  console.log(data)
+            // t.menuItemClick({ opcode: "save", event: "uiDatas" });
+          });
+          break;
+        case "master":
+          t.tagData.master.listData.forEach(o => {
+            if (o.check == true) {
+              let ch = t.tagData.master.change.find(a => {
+                return a.id == o.fbillhead_id;
+              });
+              if (ch == null) {
+                t.tagData.master.change.push({
+                  id: o.fbillhead_id,
+                  name: o.fname
+                });
+              }
+            }
+          });
+          t.tagData.master.visible = !1;
+          break;
+        case "master-del":
+          t.$confirm("您确定移除该项？", "操作提示", {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            type: "warning"
+          }).then(() => {
+            t.comm.ArrayRemove(t.tagData.master.change, o => {
+              return o.id == data;
+            });
+          });
+          break;
+        case "master-checkall":
+          t.tagData.master.listData = t.tagData.master.listData.map(o => {
+            o.check = t.tagData.master.checkall;
+            return o;
+          });
+          break;
+        default:
+          break;
+      }
+    }
   },
-// 	watch:{
-// 	  a(){  }
-//   }
+  components: { ImgManage },
+  computed: {
+    Profield() {
+      if (!this.comm.IsNullOrEmpty(this.uiDatas.profield)) {
+        return this.uiDatas.profield;
+      }
+    },
+    serviceType() {
+      if (!this.comm.IsNullOrEmpty(this.uiDatas.service)) {
+        return this.uiDatas.service;
+      }
+    },
+    city() {
+      return this.tagData.city;
+    },
+    appointed() {
+      if (!this.comm.IsNullOrEmpty(this.tagData.master)) {
+        return this.tagData.master.tabactive;
+      }
+    },
+    masterCh() {
+      return this.uiDatas.fmasterid;
+    }
+  },
+  watch: {
+    city(v) {
+      this.uiDatas.fprovince = { id: v[0] || "" };
+      this.uiDatas.fcity = { id: v[1] || "" };
+      this.uiDatas.fregion = { id: v[2] || "" };
+    },
+    serviceType(v) {
+      if (["fres_type_01", "fres_type_03"].indexOf(v) > -1) {
+        this.uiDatas.type = "offer_type_02";
+        this.tagData.serviceTypeMessage =
+          "目前配送类服务只支持“师傅报价”模式，暂不支持“一口价”";
+      } else {
+        this.tagData.serviceTypeMessage = "";
+      }
+      this.getData("seritemprice");
+    },
+    Profield(v) {
+      if (!this.comm.IsNullOrEmpty(v)) {
+        this.uiDatas.type = "";
+      }
+    },
+    appointed(v) {
+      this.tagData.master.change = [];
+    },
+    masterCh(v) {
+      if (!this.comm.IsNullOrEmpty(v.id) && this.tagData.isLoad) {
+        let _id = v.id.split(",");
+        let _name = v.name.split(",");
+        let _arr = [];
+        for (var i = 0; i < _id.length; i++) {
+          _arr.push({ id: _id[i], name: _name[i] });
+        }
+        this.tagData.master.change = _arr;
+      }
+    }
+  }
 };
-// ];
-// export default billView;
 </script>
 <style lang="scss">
 .sologo {
