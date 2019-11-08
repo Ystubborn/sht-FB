@@ -52,7 +52,7 @@ axios.interceptors.request.use(config => {
 	if(store.state && store.state.userCtx && store.state.userCtx.userToken){
 		tokenId=store.state.userCtx.userToken;
 	}
-	config.headers['X-TokenId']=tokenId;
+	config.headers['token']=tokenId;
 
 	if(config.data && config.data.loadingOption){
 		if(config.data.loadingOption.target){

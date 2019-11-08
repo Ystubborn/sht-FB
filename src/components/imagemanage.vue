@@ -1,7 +1,8 @@
 <template>
   <dl class="images-dialog">
     <dt>
-      <el-upload action="/api/file/Upload" :show-file-list="false" :headers="{authCode:config.authCode,sysCode:config.sysCode,isThumbnail: false, isPrintText: false, isPrintPic: false }" multiple :limit="limit" :before-upload="beforeEvent" :on-success="successEvent" ref="upload" :disabled="disabled" :on-exceed="exceedEvent"> <el-button plain type="warning" class="margin-right">点击上传</el-button>
+      <el-upload action="/api/file/Upload" :show-file-list="false" :headers="{authCode:config.authCode,sysCode:config.sysCode,isThumbnail: false, isPrintText: false, isPrintPic: false }" multiple :limit="limit" :before-upload="beforeEvent" :on-success="successEvent" ref="upload" :disabled="disabled" :on-exceed="exceedEvent">
+        <el-button plain type="warning" class="margin-right">点击上传</el-button>
         <slot></slot><br><span class="color-red">(最多上传{{limit}}个文件)</span>
       </el-upload>
     </dt>
@@ -76,16 +77,22 @@ export default {
 			this.$refs.upload.clearFiles();
 		},
 		successEvent(file) {
-			//console.log(arguments)
+			console.log(file);
+			console.log(arguments);
 			let t = this;
-			for (const iterator in file.data) {
-				t.fileArray.push({
-					id: '',
-					name: iterator,
-					url:t.config.fsApiUrl+  file.data[iterator],
-					size: 1000
+			if (this.fileArray.length > 0) {
+				t = this._.find(this.fileArray, o => {
+					return o.id === file.fileId;
 				});
-			 
+			}
+				for (const iterator in file.data) {
+					t.fileArray.push({
+						id: arguments[1].uid,
+						name: iterator,
+						url: t.config.fsApiUrl + file.data[iterator],
+						size: arguments[1].size
+					});
+				this.isCall = !1;
 			}
 			// if (this.fileArray.length > 0) {
 			// 	t = this._.find(this.fileArray, o => {

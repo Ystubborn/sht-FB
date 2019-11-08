@@ -1,6 +1,6 @@
 <template>
   <div style="display:inline-block;vertical-align: middle" class="margin-right">
-    <el-upload :disabled="enable" :action="config.fsApiUrl+'FileInfo/AjaxUpload'" list-type="picture-card" :headers="{authCode:config.authCode,sysCode:config.sysCode,isThumbnail: false, isPrintText: false, isPrintPic: false }" :file-list="loadlist" :limit="limit" :multiple="multiple" :on-success="successEvent" :on-remove="removeEvent" :on-preview="handlePictureCardPreview" :before-upload="beforeAvatarUpload">
+    <el-upload :disabled="enable" :action="'/api/file/Upload'" list-type="picture-card" :headers="{authCode:config.authCode,sysCode:config.sysCode,isThumbnail: false, isPrintText: false, isPrintPic: false }" :file-list="loadlist" :limit="limit" :multiple="multiple" :on-success="successEvent" :on-remove="removeEvent" :on-preview="handlePictureCardPreview" :before-upload="beforeAvatarUpload">
       <i class="el-icon-plus"></i>
     </el-upload>
     <div v-if="visible" class="lookimages-panel">

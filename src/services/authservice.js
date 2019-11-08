@@ -52,14 +52,14 @@ module.exports = {
 	},
 
 	logout() {
-		return axios.get('/auth/logout');
+		return axios.post('/api/User/Logout',{
+			token:store.state.userCtx.userToken
+		});
 	},
 
 	rememberSessionData(data) {
-		var linkIdInfo = {};
-		let MerchantID=store.state.userCtx.MerchantID?store.state.userCtx.MerchantID:null
+		 let MerchantID=store.state.userCtx.MerchantID?store.state.userCtx.MerchantID:null
 		if (data && MerchantID) {
-			// linkIdInfo = JSON.parse(data.merchantData);
 			axios({
 				method:'get',
 				url:'/api/Order/InitBill',
@@ -68,8 +68,9 @@ module.exports = {
 				}
 			}).then(a => {
 				console.log(a)
-				// store.commit('userCtx', { userHead: a.data.operationResult.srvData.uiData.fimage.id, isMonthlyaccount: a.data.operationResult.srvData.uiData.fopenmonthlyaccount })
-				store.commit('userCtx',{InitBill:a.data.data})
+				store.commit('userCtx',{InitBill:a.data.data,
+
+				})
 			})
 		}
 		var companyInfo = [];
@@ -85,7 +86,7 @@ module.exports = {
 			// linkIdentity: linkIdInfo,
 			// companys: companyInfo,
 			// company: company,
-			isPlatform:true
+			isPlatform:false
 			//  store.state.userCtx.platformCode == company.companyId
 		});
 	}

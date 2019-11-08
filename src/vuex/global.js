@@ -33,7 +33,7 @@ const options = {
       userHead: '',
       isMonthlyaccount:false,
       isLoggedIn: false,
-      isPlatform: false,
+      isPlatform:false,
       platformCode: '425035663272972289',
       platformdealer: '425236371930746886',
       upApi: {
@@ -45,7 +45,6 @@ const options = {
       companys: [],
       /*-new-*/
       userToken:'',
-      Token:'',
       organizationID:'',
       MerchantID:'uid_7483a5012f7bf9ac1a000000',
       InitBill:[]
